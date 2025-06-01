@@ -1,6 +1,8 @@
 #include <Wire.h>
 
 String addressToString(byte address);
+byte charToByte(char c);
+byte stringToByte(const String& str);
 String getLcdAddress();
 
 void setup() {
@@ -8,7 +10,6 @@ void setup() {
 
   Serial.begin(9600);
   while (!Serial);
-
 }
 
 void loop() {
@@ -16,6 +17,8 @@ void loop() {
 
   if (lcd_address == "")
     return;
+
+  Serial.println(stringToByte(lcd_address), HEX);
 }
 
 String addressToString(byte address) {
@@ -24,14 +27,31 @@ String addressToString(byte address) {
   return String(buffer);
 }
 
+byte charToByte(char c) {
+  return (c >= '0' && c <= '9') ? c - '0' 
+    : 10 + c - (c >= 'A' && c <= 'F') ? 'A' : 'a';
+}
+
+byte stringToByte(const String& str) {
+  int start{ 2 };
+  int len{ str.length() };
+  
+  byte result{ 0 };
+  
+  for (int i{ start }; i < start + 2 && i < len; i++)
+    result = result * 16 + charToByte(str[i]);
+  
+  return result;
+}
+
 String getLcdAddress() {
   Serial.println("Scanning...");
   
-  for (byte address = 1; address < 127; ++address) {
+  for (byte address{ 1 }; address < 127; ++address) {
     Wire.beginTransmission(address);
-    byte error = Wire.endTransmission();
+    byte error { Wire.endTransmission() };
 
-    if (error == 0) {
+    if (!error) {
       Serial.println("I2C device found at address: " + addressToString(address) + "!");
       return addressToString(address);
     } 
