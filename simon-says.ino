@@ -2,12 +2,14 @@
 #include <LiquidCrystal_I2C.h>
 
 LiquidCrystal_I2C* lcd = nullptr;
+constexpr int actionButton = 13;
+constexpr int moveButton = 12;
 
 String addressToString(byte address);
 byte charToByte(char c);
 byte stringToByte(const String& str);
 String getLcdAddress();
-
+int getPressedMenuButton();
 
 void displayScrollingText(const char* text, int seconds);
 
@@ -32,19 +34,29 @@ void setup() {
   lcd->setCursor(0,0);
   lcd->print("If only you paid attention to me, girl...");
 
-  pinMode(13, INPUT);
-  pinMode(8, INPUT);
+  pinMode(actionButton, INPUT);
+  pinMode(moveButton, INPUT);
 }
 
 void loop() {
   //displayScrollingText("Just the Two of Us", 30);
 
-  if (digitalRead(8) == HIGH) {
-    Serial.println("izquierda");
-    delay(500);
-  } else if(digitalRead(13) == HIGH) {
-    Serial.println("derecha");
-    delay(500);
+  int pressed{ getPressedMenuButton() };
+
+  if (!pressed)
+    return;
+
+  delay(500);
+
+  switch(pressed) {
+    case actionButton:
+      Serial.println("action");
+      break;
+    case moveButton:
+      Serial.println("move");
+      break;
+    default:
+      break;
   }
 }
 
@@ -105,4 +117,14 @@ void displayScrollingText(const char* text, int seconds) {
     lcd->scrollDisplayLeft();
     delay(delay_time);
   }
+}
+
+int getPressedMenuButton() {
+  if (digitalRead(actionButton))
+    return actionButton;
+
+  if (digitalRead(moveButton))
+    return moveButton;
+  
+  return 0;
 }
