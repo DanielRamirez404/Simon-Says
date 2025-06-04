@@ -8,6 +8,9 @@ byte charToByte(char c);
 byte stringToByte(const String& str);
 String getLcdAddress();
 
+
+void displayScrollingText(const char* text, int seconds);
+
 void setup() {
   Wire.begin();
   Serial.begin(9600);
@@ -27,11 +30,22 @@ void setup() {
   lcd->backlight();
   
   lcd->setCursor(0,0);
-  lcd->print("Hello world!");
+  lcd->print("If only you paid attention to me, girl...");
+
+  pinMode(13, INPUT);
+  pinMode(8, INPUT);
 }
 
 void loop() {
+  //displayScrollingText("Just the Two of Us", 30);
 
+  if (digitalRead(8) == HIGH) {
+    Serial.println("izquierda");
+    delay(500);
+  } else if(digitalRead(13) == HIGH) {
+    Serial.println("derecha");
+    delay(500);
+  }
 }
 
 String addressToString(byte address) {
@@ -74,4 +88,21 @@ String getLcdAddress() {
   }
 
   return "";
+}
+
+void displayScrollingText(const char* text, int seconds) {
+  lcd->clear();
+  lcd->setCursor(0,0);
+  lcd->print(text);
+  
+  delay(2500);
+
+  constexpr int delay_time{ 500 };
+
+  int i{ 0 };
+
+  for (int elapsed_time{ 0 }; elapsed_time < seconds * 1000; [&]() { elapsed_time += delay_time; ++i; }() ) {
+    lcd->scrollDisplayLeft();
+    delay(delay_time);
+  }
 }
